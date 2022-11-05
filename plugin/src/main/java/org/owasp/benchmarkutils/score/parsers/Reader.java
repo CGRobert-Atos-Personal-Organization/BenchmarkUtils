@@ -53,6 +53,7 @@ public abstract class Reader {
                 new CheckmarxIASTReader(),
                 new CheckmarxReader(),
                 new CodeQLReader(),
+                new SnykReader(),
                 new ContrastAssessReader(),
                 new ContrastScanReader(),
                 new CoverityReader(),
