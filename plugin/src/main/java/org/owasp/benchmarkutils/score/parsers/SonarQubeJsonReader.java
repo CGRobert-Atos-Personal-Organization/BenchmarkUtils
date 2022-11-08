@@ -216,6 +216,8 @@ public class SonarQubeJsonReader extends Reader {
                 || "Make sure that hashing data is safe here.".equals(message)
                 || "Make sure this weak hash algorithm is not used in a sensitive context here."
                         .equals(message)
+                || "Make sure that this user-controlled command argument doesn't lead to unwanted behavior."
+                        .equals(message)
                 || "Make sure creating this cookie without the \"HttpOnly\" flag is safe."
                         .equals(message))) {
             System.out.println(
@@ -230,6 +232,11 @@ public class SonarQubeJsonReader extends Reader {
             case "sql-injection":
                 // "Ensure that string concatenation is required and safe for this SQL query."
                 return CweNumber.SQL_INJECTION;
+
+            case "command-injection":
+                // "Ensure that string concatenation is required and safe for this SQL query."
+                return CweNumber.COMMAND_INJECTION;
+
             case "insecure-conf":
                 // "Make sure creating this cookie without the \"secure\" flag is safe here."
                 return CweNumber.INSECURE_COOKIE;
@@ -259,6 +266,14 @@ public class SonarQubeJsonReader extends Reader {
                                     "Make sure this weak hash algorithm is not used in a sensitive context here.")) {
                         return CweNumber.WEAK_HASH_ALGO;
                     }
+
+                    if (message != null
+                            && message.equals(
+                                    "Make sure creating this cookie without the \"HttpOnly\" flag is safe.")) {
+                        return CweNumber.INSECURE_COOKIE;
+                    }
+
+                    // 614 INSECURE_COOKIE
                     // Otherwise deliberately drop through to default error message.
                 }
             default:

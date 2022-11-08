@@ -26,7 +26,7 @@ import org.owasp.benchmarkutils.score.ResultFile;
 import org.owasp.benchmarkutils.score.TestCaseResult;
 import org.owasp.benchmarkutils.score.TestSuiteResults;
 
-public class SnykReader extends Reader {
+public class SnykJsonReader extends Reader {
 
     private final String LGTMCWEPREFIX = "CWE-";
     private final int LGTMCWEPREFIXLENGTH = LGTMCWEPREFIX.length();
@@ -34,7 +34,7 @@ public class SnykReader extends Reader {
     @Override
     public boolean canRead(ResultFile resultFile) {
         try {
-            return resultFile.filename().endsWith(".sarif")
+            return resultFile.filename().endsWith(".json")
                     && resultFile.isJson()
                     && resultFile
                             .json()
@@ -59,7 +59,7 @@ public class SnykReader extends Reader {
 
         JSONArray runs = resultFile.json().getJSONArray("runs");
 
-        TestSuiteResults tr = new TestSuiteResults("CodeQL", false, TestSuiteResults.ToolType.SAST);
+        TestSuiteResults tr = new TestSuiteResults("Snyk", true, TestSuiteResults.ToolType.SAST);
         // Scan time is not included in the sarif-schema. But scan time is provided on their web
         // site next to results
         tr.setTime(resultFile.file()); // This grabs the scan time out of the filename, if provided
@@ -84,6 +84,10 @@ public class SnykReader extends Reader {
             JSONArray results = run.getJSONArray("results");
             // System.out.println("Found: " + results.length() + " results.");
 
+            if (results.length() < 1) throw new NullPointerException("results is empty");
+            if (rules.length() < 1) throw new NullPointerException("rules is empty");
+            if (rulesUsed.size() < 1) throw new NullPointerException("rulesUsed is empty");
+
             for (int j = 0; j < results.length(); j++) {
                 TestCaseResult tcr =
                         parseLGTMFinding(results.getJSONObject(j), rulesUsed); // , version );
@@ -103,23 +107,22 @@ public class SnykReader extends Reader {
             JSONObject ruleJSON = rulesJSON.getJSONObject(j);
 
             try {
-                String ruleName = ruleJSON.getString("name");
-                String tag = ruleJSON.getJSONObject("properties").getJSONArray("cwe").getJSONObject(0);
-                rulesUsed.put(ruleName, Integer.parseInt(val.substring(LGTMCWEPREFIXLENGTH)));
-                // for (int i = 0; i < tags.length(); i++) {
-                //     String val = tags.getString(i);
-                //     if (val.startsWith(LGTMCWEPREFIX)) {
-                //         // NOTE: If you try to map the rules here, you have to map EVERY rule in the
-                //         // current ruleset, even though many of those rules won't have results. So
-                //         // instead we map them later when there is actually a finding by that rule.
-                //         rulesUsed.put(
-                //                 ruleName, Integer.parseInt(val.substring(LGTMCWEPREFIXLENGTH)));
-                //         break; // Break out of for loop because we only want to use the first CWE it
-                //         // is mapped to currently. If they add rules where the first CWE is
-                //         // not the preferred one, then we need to implement fixCWE() and
-                //         // invoke it (commented out example below)
-                //     }
-                // }
+                String ruleId = ruleJSON.getString("id");
+                JSONArray cwes = ruleJSON.getJSONObject("properties").getJSONArray("cwe");
+
+                for (int i = 0; i < cwes.length(); i++) {
+                    String cwe = cwes.getString(i);
+                    if (cwe.startsWith(LGTMCWEPREFIX)) {
+                        // NOTE: If you try to map the rules here, you have to map EVERY rule in the
+                        // current ruleset, even though many of those rules won't have results.So
+                        // instead we map them later when there is actually a finding by that rule.
+                        rulesUsed.put(ruleId, Integer.parseInt(cwe.substring(LGTMCWEPREFIXLENGTH)));
+                        break; // Break out of for loop because we only want to use the first CWE it
+                        // is mapped to currently. If they add rules where the first CWE is
+                        // not the preferred one, then we need to implement fixCWE() and
+                        // invoke it (commented out example below)
+                    }
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -148,6 +151,7 @@ public class SnykReader extends Reader {
                                 filename.lastIndexOf('.'));
                 tcr.setNumber(Integer.parseInt(testNumber));
                 String ruleId = finding.getString("ruleId");
+
                 Integer cweForRule = rulesUsed.get(ruleId);
                 // System.out.println("Found finding in: " + testNumber + " of type: " + ruleId +
                 // " CWE: " + cweForRule);
@@ -196,13 +200,21 @@ public class SnykReader extends Reader {
         switch (cweNumber) {
                 // These are properly mapped by default
             case 22: // java/path-injection and zipslip
+                return cweNumber.intValue(); // Return CWE as is
             case 78: // java & js/command-line-injection
+                return cweNumber.intValue(); // Return CWE as is
             case 79: // java/xss & js/reflected-xss
+                return cweNumber.intValue(); // Return CWE as is
             case 89: // java & js/sql-injection and similar sqli rules
+                return cweNumber.intValue(); // Return CWE as is
             case 90: // java/ldap-injection
+                return cweNumber.intValue(); // Return CWE as is
             case 327: // java/weak-cryptographic-algorithm
+                return cweNumber.intValue(); // Return CWE as is
             case 611: // java & js/xxe
+                return cweNumber.intValue(); // Return CWE as is
             case 614: // java/insecure-cookie
+                return cweNumber.intValue(); // Return CWE as is
             case 643: // java/xml/xpath-injection
                 return cweNumber.intValue(); // Return CWE as is
 
@@ -237,8 +249,18 @@ public class SnykReader extends Reader {
                     case 918: // java/ssrf
                     case 1104: // java/maven/dependency-upon-bintray
                 */
-
+            case 330: // js/type-confusion-through-parameter-tampering
+                return cweNumber.intValue(); // Return CWE as is
+            case 1004: // js/type-confusion-through-parameter-tampering
+                return cweNumber.intValue(); // Return CWE as is
+            case 916: // js/type-confusion-through-parameter-tampering
+                return cweNumber.intValue(); // Return CWE as is
+            case 23: // js/type-confusion-through-parameter-tampering
+                return cweNumber.intValue(); // Return CWE as is
+            case 501: // js/type-confusion-through-parameter-tampering
+                return cweNumber.intValue(); // Return CWE as is
             case 113: // java/http-response-splitting
+                return cweNumber.intValue(); // Return CWE as is
             case 117: // js/log-injection
             case 134: // java/tainted-format-string
             case 209: // java/stack-trace-exposure
@@ -255,7 +277,7 @@ public class SnykReader extends Reader {
                 return cweNumber.intValue(); // Return CWE as is
             default:
                 System.out.println(
-                        "CodeQL parser encountered new unmapped vulnerability type: "
+                        "Snyk parser encountered new unmapped vulnerability type: "
                                 + cweNumber
                                 + " for rule: "
                                 + ruleName);

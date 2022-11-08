@@ -1,0 +1,663 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "SnykCode",
+          "semanticVersion": "1.0.0",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "java/InsecureCipherNoIntegrity",
+              "name": "InsecureCipherNoIntegrity",
+              "shortDescription": {
+                "text": "Use of a Broken or Risky Cryptographic Algorithm"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "help": {
+                "markdown": "\n## Details\n\nWhen sensitive information is transmitted with weak encryption, attackers are potentially able to intercept the information and decrypt it, with a wide range of negative consequences. This includes accessing code or content they are not authorized to view and changing or taking down a site or app, often with a demand for ransom. Every developer is aware of the risks of transmitting sensitive information in plain text. Yet many still use outdated or inferior cryptographic methods to protect information under their control. As cryptographic methods grow stronger with time, code must be updated to incorporate more modern and secure cryptography.\n\n### Best practices for prevention\n* Avoid using DES, and use AES (in a secure mode, such as Galois/Counter Mode) or another strong encryption algorithm instead.\n* Be aware of outdated hashes, such as MD5 and SHA1 (along with many others); recognize and implement current cryptographic standards instead.\n* Never use custom or DIY security and cryptographic methods; instead, use methods that are part of an accepted library or framework.\n* Ensure that code dealing with cryptographic methods is highly modular and can be easily replaced as security standards change.\n* Increase developer awareness of proper encryption key management and protection to ensure best practices throughout the application.",
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "java"
+                ],
+                "categories": [
+                  "Security"
+                ],
+                "exampleCommitFixes": [
+                  {
+                    "commitURL": "https://github.com/terracotta-bank/terracotta-bank/commit/a27453b52859d32ef25694869c1662a9493c621c?diff=split#diff-49444057459eecb4ff09662c3beab114L95",
+                    "lines": [
+                      {
+                        "line": "String ivHeader = request.getHeader(\"X-Encryption-Iv\");",
+                        "lineNumber": 93,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "byte[] iv = Base64.getDecoder().decode(ivHeader);",
+                        "lineNumber": 94,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "Cipher cipher = Cipher.getInstance(\"AES/CBC/PKCS5Padding\");",
+                        "lineNumber": 94,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "cipher.init(Cipher.DECRYPT_MODE, secretKey(), new IvParameterSpec(iv));",
+                        "lineNumber": 95,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "Cipher cipher = Cipher.getInstance(\"AES/GCM/NoPadding\");",
+                        "lineNumber": 95,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "cipher.init(Cipher.DECRYPT_MODE, secretKey(), new GCMParameterSpec(128, iv));",
+                        "lineNumber": 96,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "cipher.updateAAD(version.getBytes(UTF_8));",
+                        "lineNumber": 97,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "InputStream plain = new CipherInputStream(new Base64InputStream(request.getInputStream()), cipher);",
+                        "lineNumber": 98,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "\treturn new DecryptedWrapper(request, plain);",
+                        "lineNumber": 99,
+                        "lineChange": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "commitURL": "https://github.com/oracle/helidon/commit/bd7b527d900fc3c7c5204459f9bf6dabb5de9f3f?diff=split#diff-5ab21f1b0b5ca2653372fd39b4aa40b0L64",
+                    "lines": [
+                      {
+                        "line": "KeySpec keySpec = new PBEKeySpec(masterPassword, salt, 10000, 128);",
+                        "lineNumber": 61,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "KeySpec keySpec = new PBEKeySpec(masterPassword, salt, 10000, 256);",
+                        "lineNumber": 61,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "SecretKeySpec spec = new SecretKeySpec(secretKeyFactory.generateSecret(keySpec).getEncoded(), \"AES\");",
+                        "lineNumber": 62,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "Cipher cipher = Cipher.getInstance(\"AES/CBC/PKCS5Padding\");",
+                        "lineNumber": 63,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "cipher.init(cipherMode, spec, new IvParameterSpec(salt));",
+                        "lineNumber": 64,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "Cipher cipher = Cipher.getInstance(\"AES/GCM/NoPadding\");",
+                        "lineNumber": 63,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "cipher.init(cipherMode, spec, new GCMParameterSpec(128, nonce));",
+                        "lineNumber": 64,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": " return cipher;",
+                        "lineNumber": 66,
+                        "lineChange": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "commitURL": "https://github.com/Esri/mapbook-android/commit/29dbb58917955ca69632a80cc189247f6398fdbb?diff=split#diff-9865f4effc693075a16c0a2b0657d46eL84",
+                    "lines": [
+                      {
+                        "line": "public class CredentialCryptographer {",
+                        "lineNumber": 81,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String TAG = CredentialCryptographer.class.getSimpleName();",
+                        "lineNumber": 82,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String CIPHER_TYPE = \"AES/GCM/NoPadding\";",
+                        "lineNumber": 83,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String RSA_MODE =  \"RSA/ECB/PKCS1Padding\";",
+                        "lineNumber": 84,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String AES_MODE = \"AES/ECB/PKCS7Padding\";",
+                        "lineNumber": 85,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String AndroidKeyStore = \"AndroidKeyStore\";",
+                        "lineNumber": 86,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "  private static final String ALIAS = \"CRED_KEY\";",
+                        "lineNumber": 87,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "final SecretKey key = (SecretKey) keyStore.getKey(ALIAS, null);",
+                        "lineNumber": 236,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "final Cipher c = Cipher.getInstance(CIPHER_TYPE);",
+                        "lineNumber": 238,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "final File file = new File(getFilePath(encryptedDataFileName));",
+                        "lineNumber": 240,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "byte [] decodedBytes = null;",
+                        "lineNumber": 473,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "try{",
+                        "lineNumber": 474,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "  final Cipher c = Cipher.getInstance(AES_MODE, \"BC\");",
+                        "lineNumber": 475,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "  c.init(Cipher.DECRYPT_MODE, getSecretKey(context));",
+                        "lineNumber": 476,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "  decodedBytes = c.doFinal(encrypted);",
+                        "lineNumber": 477,
+                        "lineChange": "removed"
+                      }
+                    ]
+                  }
+                ],
+                "exampleCommitDescriptions": [
+                  "added versioning and included salt in encrypted byte stream.",
+                  "Switch from CBC to GCM"
+                ],
+                "precision": "very-high",
+                "repoDatasetSize": 54,
+                "cwe": [
+                  "CWE-327"
+                ]
+              }
+            },
+            {
+              "id": "java/Sqli",
+              "name": "Sqli",
+              "shortDescription": {
+                "text": "SQL Injection"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "help": {
+                "markdown": "## Details\n\nIn an SQL injection attack, the user can submit an SQL query directly to the database, gaining access without providing appropriate credentials. Attackers can then view, export, modify, and delete confidential information; change passwords and other authentication information; and possibly gain access to other systems within the network. This is one of the most commonly exploited categories of vulnerability, but can largely be avoided through good coding practices.\n\n### Best practices for prevention\n* Avoid passing user-entered parameters directly to the SQL server.\n* Avoid using string concatenation to build SQL queries from user-entered parameters.\n* When coding, define SQL code first, then pass in parameters. Use prepared statements with parameterized queries. Examples include `SqlCommand()` in .NET and `bindParam()` in PHP.\n* Use strong typing for all parameters so unexpected user data will be rejected.\n* Where direct user input cannot be avoided for performance reasons, validate input against a very strict allowlist of permitted characters, avoiding special characters such as `? & / < > ; - ' \" \\` and spaces. Use a vendor-supplied escaping routine if possible.\n* Develop your application in an environment and/or using libraries that provide protection against SQL injection.\n* Harden your entire environment around a least-privilege model, ideally with isolated accounts with privileges only for particular tasks.",
+                "text": ""
+              },
+              "properties": {
+                "tags": [
+                  "java"
+                ],
+                "categories": [
+                  "Security"
+                ],
+                "exampleCommitFixes": [
+                  {
+                    "commitURL": "https://github.com/jeffdcamp/dbtools-android/commit/2643c30c302955a03233847c154350e424cca1d9?diff=split#diff-e2f0ab1619799e644c57ba98ebe6f39aL474",
+                    "lines": [
+                      {
+                        "line": "}",
+                        "lineNumber": 471,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "public int delete(@Nonnull SQLiteDatabase db, @Nullable String where, @Nullable String[] whereArgs) {",
+                        "lineNumber": 473,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "public int delete(@Nonnull DatabaseWrapper db, @Nullable String where, @Nullable String[] whereArgs) {",
+                        "lineNumber": 412,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "    checkDB(db);",
+                        "lineNumber": 474,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    int rowsAffected = 0;",
+                        "lineNumber": 475,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "for (int tryCount = 0; tryCount < MAX_TRY_COUNT && !success; tryCount++) {",
+                        "lineNumber": 479,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    try {",
+                        "lineNumber": 480,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        rowsAffected = db.delete(getTableName(), where, whereArgs);",
+                        "lineNumber": 481,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        postDeleteEvent(db, getTableName(), rowsAffected);",
+                        "lineNumber": 482,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        success = true;",
+                        "lineNumber": 483,
+                        "lineChange": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "commitURL": "https://github.com/keycloak/keycloak/commit/c8c86d2badb5ed97f9fbfe2c98e190c5a73cdb66?diff=split#diff-df89d441bd8b2c3dd63c28b12e23245dL47",
+                    "lines": [
+                      {
+                        "line": "@Inject",
+                        "lineNumber": 45,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "private EntityManager entityManager;",
+                        "lineNumber": 46,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "@Context",
+                        "lineNumber": 48,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "@Path(\"{id}\")",
+                        "lineNumber": 99,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "@Produces(\"application/json\")",
+                        "lineNumber": 100,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "public Response findById(@PathParam(\"id\") String id) {",
+                        "lineNumber": 101,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    List result = this.entityManager.createQuery(\"from Album where id = \" + id).getResultList();",
+                        "lineNumber": 102,
+                        "lineChange": "removed"
+                      },
+                      {
+                        "line": "    List result = this.entityManager.createQuery(\"from Album where id = \" + Long.valueOf(id)).getResultList();",
+                        "lineNumber": 102,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "    if (result.isEmpty()) {",
+                        "lineNumber": 104,
+                        "lineChange": "none"
+                      }
+                    ]
+                  },
+                  {
+                    "commitURL": "https://github.com/nuls-io/nuls/commit/7ff6aaf43ba54ec5cce6d03f7243e5a941fb3e4a?diff=split#diff-0444fba3b07c567a52ceed78978dc18bR532",
+                    "lines": [
+                      {
+                        "line": "}",
+                        "lineNumber": 536,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": " * @return",
+                        "lineNumber": 529,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": " */",
+                        "lineNumber": 530,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "@Deprecated",
+                        "lineNumber": 531,
+                        "lineChange": "added"
+                      },
+                      {
+                        "line": "public static Result delete(String area, String key) {",
+                        "lineNumber": 538,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    if (!baseCheckArea(area)) {",
+                        "lineNumber": 539,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        return new Result(true, \"KV_AREA_NOT_EXISTS\");",
+                        "lineNumber": 540,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    }",
+                        "lineNumber": 541,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    if (StringUtils.isBlank(key)) {",
+                        "lineNumber": 542,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        return Result.getFailed(KernelErrorCode.NULL_PARAMETER);",
+                        "lineNumber": 543,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    }",
+                        "lineNumber": 544,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    try {",
+                        "lineNumber": 545,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        DB db = AREAS.get(area);",
+                        "lineNumber": 546,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        db.delete(bytes(key));",
+                        "lineNumber": 547,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "        return Result.getSuccess();",
+                        "lineNumber": 548,
+                        "lineChange": "none"
+                      },
+                      {
+                        "line": "    } catch (Exception e) {",
+                        "lineNumber": 549,
+                        "lineChange": "none"
+                      }
+                    ]
+                  }
+                ],
+                "exampleCommitDescriptions": [
+                  "- Support hive user impersonation on hive tables page",
+                  "* Moves converter pattern to Java 11",
+                  "Add query logging."
+                ],
+                "precision": "very-high",
+                "repoDatasetSize": 197,
+                "cwe": [
+                  "CWE-89"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "java/InsecureCipherNoIntegrity",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "The ECB mode used in javax.crypto.KeyGenerator.getInstance does not provide integrity. Consided using Galois/Counter Mode.",
+            "markdown": "The {0} mode used in {1} does not provide integrity. Consided using Galois/Counter Mode.",
+            "arguments": [
+              "[ECB](0)",
+              "[javax.crypto.KeyGenerator.getInstance](1)"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest01401.java",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 80,
+                  "endLine": 80,
+                  "startColumn": 68,
+                  "endColumn": 78
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "0": "eacdb5e7b1195723c6cab3a8a913ae34547ecdb9612ead86ee0a8747eb3313e4",
+            "1": "19689298.1cbd3ff4.ba832df5.ede9cf8e.3e9eb16c.caefa017.57fc8460.667380ee.19689298.1cbd3ff4.ba832df5.ede9cf8e.3e9eb16c.caefa017.57fc8460.667380ee"
+          },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "id": 0,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest01401.java",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 80,
+                            "endLine": 80,
+                            "startColumn": 80,
+                            "endColumn": 84
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "id": 1,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest01401.java",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 80,
+                            "endLine": 80,
+                            "startColumn": 68,
+                            "endColumn": 78
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "priorityScore": 552,
+            "priorityScoreFactors": [
+              {
+                "label": true,
+                "type": "multipleOccurrence"
+              },
+              {
+                "label": true,
+                "type": "hotFileSource"
+              },
+              {
+                "label": true,
+                "type": "fixExamples"
+              }
+            ]
+          }
+        },
+        {
+          "ruleId": "java/InsecureCipherNoIntegrity",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "The ECB mode used in javax.crypto.KeyGenerator.getInstance does not provide integrity. Consided using Galois/Counter Mode.",
+            "markdown": "The {0} mode used in {1} does not provide integrity. Consided using Galois/Counter Mode.",
+            "arguments": [
+              "[ECB](0)",
+              "[javax.crypto.KeyGenerator.getInstance](1)"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00121.java",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 81,
+                  "endLine": 81,
+                  "startColumn": 68,
+                  "endColumn": 78
+                }
+              }
+            }
+          ],
+          "fingerprints": {
+            "0": "7938b3b8accaf237cfde4936fb7c2283fdc98cf3db801630620a38434a5ae129",
+            "1": "19689298.1cbd3ff4.ba832df5.ede9cf8e.3e9eb16c.caefa017.57fc8460.667380ee.19689298.1cbd3ff4.ba832df5.ede9cf8e.3e9eb16c.caefa017.57fc8460.667380ee"
+          },
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "id": 0,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00121.java",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 81,
+                            "endLine": 81,
+                            "startColumn": 80,
+                            "endColumn": 84
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "location": {
+                        "id": 1,
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "src/main/java/org/owasp/benchmark/testcode/BenchmarkTest00121.java",
+                            "uriBaseId": "%SRCROOT%"
+                          },
+                          "region": {
+                            "startLine": 81,
+                            "endLine": 81,
+                            "startColumn": 68,
+                            "endColumn": 78
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "priorityScore": 552,
+            "priorityScoreFactors": [
+              {
+                "label": true,
+                "type": "multipleOccurrence"
+              },
+              {
+                "label": true,
+                "type": "hotFileSource"
+              },
+              {
+                "label": true,
+                "type": "fixExamples"
+              }
+            ]
+          }
+        }
+      ],
+      "properties": {
+        "coverage": [
+          {
+            "files": 2766,
+            "isSupported": true,
+            "lang": "XML"
+          },
+          {
+            "files": 2783,
+            "isSupported": true,
+            "lang": "HTML"
+          },
+          {
+            "files": 6,
+            "isSupported": true,
+            "lang": "JavaScript"
+          },
+          {
+            "files": 2763,
+            "isSupported": true,
+            "lang": "Java"
+          }
+        ]
+      }
+    }
+  ]
+}
